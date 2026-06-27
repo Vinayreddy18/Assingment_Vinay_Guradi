@@ -144,7 +144,7 @@ samadhan/
 ├── cmd/samadhan/main.go          # entrypoint
 ├── internal/
 │   ├── domain/                   # entities, errors, FormatINR
-│   ├── llm/                      # provider interface, Anthropic, offline mock, prompts
+│   ├── llm/                      # provider interface, Anthropic/OpenAI, offline mock, prompts
 │   ├── analysis/                 # settlement intelligence engine (economic model)
 │   ├── negotiation/              # double-blind-bid protocol engine
 │   ├── drafting/                 # settlement agreement drafter
@@ -153,9 +153,9 @@ samadhan/
 │   └── api/                      # HTTP server, handlers, middleware, seed data
 ├── web/index.html                # single-file UI (vanilla JS, no framework)
 ├── Makefile / Dockerfile / docker-compose.yml
-├── README.md / EXPLANATORY.md / ARCHITECTURE.md
+├── README.md / ARCHITECTURE.md
 ├── DEMO_SCRIPT.md / NOTES.md / PROMPTS.md
 └── go.mod
 ```
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for diagrams and [EXPLANATORY.md](EXPLANATORY.md) for a deep walkthrough of every design decision.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for diagrams and [NOTES.md](NOTES.md) for design notes.

@@ -1,12 +1,12 @@
 # Notes
 
-## What I Built
+## Overview
 
 Samādhān — an AI-native Settlement Intelligence & Autonomous Negotiation Engine. It resolves high-volume disputes (loan defaults, cheque bounces, e-commerce claims) by computing a transparent, auditable settlement range and running a confidential double-blind bidding protocol, without requiring a human neutral for routine cases.
 
-## Why This Problem
+## Problem Context
 
-Presolv360's core bottleneck: every dispute needs a scarce neutral, respondents rarely engage, and negotiations stall. I chose this because it's a genuine scaling problem, not a feature — and because the AI-native answer isn't "throw a chatbot at it" but a careful hybrid of qualitative AI assessment and deterministic, explainable economics.
+Presolv360's core bottleneck: every dispute needs a scarce neutral, respondents rarely engage, and negotiations stall. This is a genuine scaling problem, not just a feature gap — and the AI-native answer is not "throw a chatbot at it" but a careful hybrid of qualitative AI assessment and deterministic, explainable economics.
 
 ## Key Design Decisions
 
@@ -18,11 +18,7 @@ Presolv360's core bottleneck: every dispute needs a scarce neutral, respondents 
 
 4. **Escalation.** The system knows when to stop: no ZOPA → instalment + human neutral. Max rounds → escalation. No forced deals.
 
-## Time Spent
-
-Approximately 10–12 hours across two sessions. The bulk was in the economic model design and getting the three demo branches (ZOPA, accept-recommended, no-ZOPA/instalment) to produce compelling, correct outputs.
-
-## What I'd Do With More Time
+## Production Path
 
 - Persistent storage (Postgres) with per-party auth so each side only sees their own nudges
 - Document OCR/extraction pipeline feeding the LLM

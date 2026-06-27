@@ -1,20 +1,20 @@
-# Prompts & Process
+# Prompts
 
-This document covers both the development process (how the product was built with AI assistance) and the actual system prompts the product itself uses to communicate with the language model.
+This document covers the system prompts Samādhān uses to communicate with the language model, along with the product design context behind those prompts.
 
 ---
 
-## Part 1: Development Process
+## Part 1: Product Context
 
-### Problem Selection
+### Problem Context
 
-The brief asked to pick a challenging real problem that Presolv360 has tried to solve. I started by researching Presolv360's actual operations:
+Samādhān is designed around Presolv360's high-volume Online Dispute Resolution context:
 
-- Web searches for Presolv360's revenue, team size, advisory council (which includes ex-CJI U.U. Lalit and Justice Srikrishna), and product capabilities.
-- Identified their core use case: high-volume BFSI disputes (NBFC/bank loan defaults, cheque-bounce under s.138 NI Act, e-commerce).
-- Read their positioning: "not a law firm, does not give legal advice" — advisory/decision-support only.
+- High-volume BFSI disputes such as NBFC/bank loan defaults, cheque-bounce matters under s.138 NI Act, and e-commerce claims.
+- A platform posture of advisory/decision-support rather than legal representation.
+- A need for repeatable settlement intelligence that can scale without depending on a scarce human neutral for every routine case.
 
-The problem I landed on: **ODR can't scale because every case needs a scarce human neutral, respondents rarely engage, and no party knows a defensible settlement range.** This is a structural problem, not a feature request.
+The core problem: **ODR can't scale because every case needs a scarce human neutral, respondents rarely engage, and no party knows a defensible settlement range.** This is a structural problem, not a feature request.
 
 ### Architecture Decision
 
@@ -33,22 +33,9 @@ The economic model was designed on paper first (BATNA/WATNA framework from negot
 4. Negotiation engine (double-blind protocol)
 5. Drafting engine
 6. HTTP handlers and server
-7. Seed data (three cases targeting the three demo branches)
+7. Seed data (three cases targeting the main product branches)
 8. Frontend (single-file vanilla JS)
 9. Tests, ops files, documentation
-
-### AI-Assisted Development
-
-The entire codebase was built in collaboration with Claude. Key uses:
-
-- **Architecture**: discussing the hybrid model trade-offs, BATNA/ZOPA math, nudge confidentiality architecture
-- **Code generation**: producing Go packages file by file with explicit struct definitions, JSON tags, and error handling
-- **Testing**: designing test cases for invariant properties (ZOPA consistency, monotonicity, confidentiality)
-- **Frontend**: building the ZOPA spectrum SVG visualization and the judicial-ledger aesthetic
-- **Research**: web searches for Presolv360's business context, Indian legal concepts (s.138 NI Act, ODR frameworks)
-- **Documentation**: this file, the README, EXPLANATORY, ARCHITECTURE, DEMO_SCRIPT
-
----
 
 ## Part 2: System Prompts Used by the Product
 
@@ -139,3 +126,85 @@ The `MockProvider` (`internal/llm/mock.go`) is a deterministic, network-free imp
 
 **Drafting:**
 - Fills a complete settlement agreement template with the case details
+
+---
+
+## Part 4: Prompt / Transcript Summary
+
+The development transcript can be summarized into the following prompt groups:
+
+### Problem Framing
+
+```text
+Design an AI-native product for Presolv360 that addresses a real Online Dispute Resolution bottleneck. Focus on high-volume disputes where a human neutral is scarce and parties need a defensible settlement range.
+```
+
+Outcome: the product direction became a settlement-intelligence and autonomous negotiation engine for routine BFSI, cheque-bounce, and e-commerce disputes.
+
+### Architecture
+
+```text
+Propose a defensible architecture for legal/ODR settlement recommendations. The system should not rely on an opaque model-generated number; every settlement figure should be auditable.
+```
+
+Outcome: the hybrid architecture was selected:
+
+- LLM for qualitative reading of facts and documents.
+- Deterministic economic model for BATNA, exposure, ZOPA, and recommendation.
+- Line-by-line rationale for explainability.
+
+### Domain Model
+
+```text
+Create Go domain entities for disputes, parties, documents, case analysis, negotiation rounds, nudges, and settlements. Keep the domain independent from HTTP, storage, and model providers.
+```
+
+Outcome: the `internal/domain` package defines the aggregate root and lifecycle states: intake, analyzed, negotiating, settled, and escalated.
+
+### LLM Provider Abstraction
+
+```text
+Build a provider interface so the system can run offline with deterministic responses and also support live model providers when API keys are available.
+```
+
+Outcome: the `llm.Provider` interface supports the offline mock provider and live Anthropic/OpenAI providers.
+
+### Settlement Intelligence Engine
+
+```text
+Implement the settlement analysis engine. The LLM should produce qualitative inputs such as claim strength, recovery rate, time to resolution, and capacity. The deterministic model should calculate claimant floor, respondent ceiling, ZOPA, and recommended settlement.
+```
+
+Outcome: `internal/analysis/engine.go` implements the economic model with named constants and a generated rationale.
+
+### Confidential Negotiation
+
+```text
+Implement a double-blind bidding protocol. Each party submits a confidential figure. If offers cross, settle at the midpoint. If not, send each side a private nudge without revealing the other party's number.
+```
+
+Outcome: `internal/negotiation/engine.go` handles settlement, continuation, private nudges, and escalation after max rounds.
+
+### Agreement Drafting
+
+```text
+Draft a settlement agreement automatically once a dispute resolves. Include parties, recitals, payment terms, full and final settlement, mutual release, confidentiality, signature blocks, and a note that it is not legal advice.
+```
+
+Outcome: `internal/drafting/drafter.go` generates the final settlement agreement, with deterministic fallback text if the model call fails.
+
+### Frontend
+
+```text
+Create a no-build single-page UI that lets a user select or create a case, run analysis, view the settlement spectrum, negotiate, accept the recommended figure, and view the final agreement.
+```
+
+Outcome: `web/index.html` implements the full user flow in vanilla HTML/CSS/JavaScript.
+
+### Testing
+
+```text
+Add focused tests for economic model invariants, deterministic offline behavior, negotiation settlement/escalation, nudge confidentiality, JSON extraction, and INR formatting.
+```
+
+Outcome: unit tests cover the highest-risk logic while staying offline and repeatable.

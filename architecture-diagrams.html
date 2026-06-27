@@ -446,7 +446,7 @@ flowchart LR
           <tr>
             <td>External deps</td>
             <td>Zero</td>
-            <td>Entire dependency tree is Go stdlib; only outbound HTTP call is to Anthropic</td>
+            <td>Entire dependency tree is Go stdlib; live model calls use provider APIs directly over HTTP</td>
           </tr>
           <tr>
             <td>UI</td>
@@ -456,12 +456,12 @@ flowchart LR
           <tr>
             <td>Storage</td>
             <td>In-memory (<code>sync.RWMutex</code>)</td>
-            <td>Appropriate for a demo / take-home; swap for Postgres behind an interface</td>
+            <td>Lightweight default for local operation; swap for Postgres behind an interface</td>
           </tr>
           <tr>
             <td>LLM</td>
             <td>Provider interface</td>
-            <td><code>MockProvider</code> for deterministic offline; <code>AnthropicProvider</code> for live</td>
+            <td><code>MockProvider</code> for deterministic offline; Anthropic/OpenAI providers for live models</td>
           </tr>
           <tr>
             <td>Config</td>

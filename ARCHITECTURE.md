@@ -203,8 +203,8 @@ flowchart LR
 | Layer | Choice | Rationale |
 |---|---|---|
 | Language | Go 1.22 | stdlib-only server, method routing, strong concurrency, single binary |
-| External deps | Zero | Entire dependency tree is Go stdlib; only outbound HTTP call is to Anthropic |
+| External deps | Zero | Entire dependency tree is Go stdlib; live model calls use provider APIs directly over HTTP |
 | UI | Vanilla JS, single file | No build step, no node_modules, serves from `web/index.html` |
-| Storage | In-memory (sync.RWMutex) | Appropriate for a demo / take-home; swap for Postgres behind an interface |
-| LLM | Provider interface | `MockProvider` for deterministic offline; `AnthropicProvider` for live |
+| Storage | In-memory (sync.RWMutex) | Lightweight default for local operation; swap for Postgres behind an interface |
+| LLM | Provider interface | `MockProvider` for deterministic offline; Anthropic/OpenAI providers for live models |
 | Config | Environment variables | 12-factor; zero-config default boots offline with seed data |

@@ -1,6 +1,6 @@
 # Demo Script
 
-Spoken walkthrough for a 5–7 minute screen recording (Loom or similar). This covers the three seeded cases, each demonstrating a different branch of the system.
+Spoken walkthrough for the product. This covers the three seeded cases, each demonstrating a different branch of the system.
 
 ---
 
@@ -13,7 +13,7 @@ Spoken walkthrough for a 5–7 minute screen recording (Loom or similar). This c
 
 ---
 
-## Talking Points (Screen Recording)
+## Talking Points
 
 ### Opening (30 seconds)
 
