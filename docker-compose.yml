@@ -1,0 +1,17 @@
+services:
+  samadhan:
+    build: .
+    image: samadhan:latest
+    ports:
+      - "8080:8080"
+    environment:
+      # Leave ANTHROPIC_API_KEY unset to run the deterministic offline model.
+      # Set ANTHROPIC_API_KEY or OPENAI_API_KEY to light up a live provider.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SAMADHAN_PROVIDER: ${SAMADHAN_PROVIDER:-}
+      SAMADHAN_MODEL: ${SAMADHAN_MODEL:-claude-sonnet-4-6}
+      SAMADHAN_OPENAI_MODEL: ${SAMADHAN_OPENAI_MODEL:-gpt-4.1-mini}
+      SAMADHAN_MAX_ROUNDS: ${SAMADHAN_MAX_ROUNDS:-3}
+      SAMADHAN_SEED: ${SAMADHAN_SEED:-true}
+    restart: unless-stopped

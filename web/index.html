@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Samādhān · Settlement Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14173a;          /* deep indigo — legal ink */
+    --ink-80:#2b2e54;
+    --ink-60:#565a82;
+    --ink-40:#878ba9;
+    --paper:#e9ebf1;        /* cool paper, not cream */
+    --surface:#ffffff;
+    --surface-2:#f6f7fb;
+    --line:#d7dae4;
+    --line-2:#e6e8f0;
+    --brass:#b4842b;        /* scales of justice — authority accent */
+    --brass-soft:#e7d4a6;
+    --brass-tint:rgba(180,132,43,.12);
+    --floor:#2f7d5b;        /* claimant floor / settlement pole */
+    --floor-tint:rgba(47,125,91,.12);
+    --ceiling:#b04a3f;      /* respondent ceiling / risk pole */
+    --ceiling-tint:rgba(176,74,63,.12);
+    --ok:#2f7d5b;
+    --warn:#b4842b;
+    --esc:#b04a3f;
+    --shadow:0 1px 2px rgba(20,23,58,.06),0 8px 24px rgba(20,23,58,.08);
+    --shadow-lg:0 12px 40px rgba(20,23,58,.16);
+    --radius:14px;
+    --radius-sm:9px;
+    --maxw:1280px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  .mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-feature-settings:"tnum" 1;}
+  .serif{font-family:"Fraunces",Georgia,serif;}
+  h1,h2,h3{margin:0;font-family:"Fraunces",Georgia,serif;font-weight:600;letter-spacing:-.01em;line-height:1.15;}
+  a{color:inherit}
+  button{font-family:inherit}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    background:var(--ink);
+    color:#fff;
+    border-bottom:1px solid #000;
+  }
+  .topbar-inner{
+    max-width:var(--maxw);margin:0 auto;padding:14px 24px;
+    display:flex;align-items:center;gap:18px;
+  }
+  .brand{display:flex;align-items:baseline;gap:12px;min-width:0}
+  .brand .mark{
+    font-family:"Fraunces",serif;font-weight:600;font-size:24px;letter-spacing:-.02em;color:#fff;
+  }
+  .brand .mark .dot{color:var(--brass-soft)}
+  .brand .tag{
+    font-size:12.5px;color:#b9bce0;font-weight:500;white-space:nowrap;
+    border-left:1px solid #3a3d63;padding-left:12px;
+  }
+  .topbar-spacer{flex:1}
+  .provider-pill{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;font-weight:600;letter-spacing:.02em;
+    background:#1d2048;border:1px solid #34376a;color:#cfd2f2;
+    padding:6px 11px;border-radius:999px;
+  }
+  .provider-pill .led{width:7px;height:7px;border-radius:50%;background:var(--brass-soft);box-shadow:0 0 0 3px rgba(231,212,166,.18)}
+  .provider-pill.live .led{background:#5fd29b;box-shadow:0 0 0 3px rgba(95,210,155,.18)}
+
+  /* ---------- shell ---------- */
+  .shell{max-width:var(--maxw);margin:0 auto;padding:24px;display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start;}
+  @media (max-width:980px){ .shell{grid-template-columns:1fr;} }
+
+  /* ---------- docket (left) ---------- */
+  .docket{position:sticky;top:24px;}
+  @media (max-width:980px){ .docket{position:static;} }
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .docket-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 12px;}
+  .docket-head h2{font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-60);font-weight:600;}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);font-weight:600;}
+  .btn{
+    border:1px solid var(--ink);background:var(--ink);color:#fff;
+    font-size:13px;font-weight:600;padding:9px 14px;border-radius:9px;cursor:pointer;
+    transition:transform .08s ease, box-shadow .15s ease, background .15s ease;
+    display:inline-flex;align-items:center;gap:7px;
+  }
+  .btn:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
+  .btn:active{transform:translateY(0)}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+  .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+  .btn.ghost:hover{background:var(--surface-2)}
+  .btn.brass{background:var(--brass);border-color:var(--brass)}
+  .btn.sm{padding:7px 11px;font-size:12.5px}
+  .btn.block{width:100%;justify-content:center}
+
+  .filters{display:flex;flex-wrap:wrap;gap:6px;padding:0 18px 14px;}
+  .chip{
+    font-size:12px;font-weight:600;padding:5px 10px;border-radius:999px;cursor:pointer;
+    background:var(--surface-2);border:1px solid var(--line-2);color:var(--ink-60);
+  }
+  .chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .case-list{list-style:none;margin:0;padding:8px;display:flex;flex-direction:column;gap:6px;max-height:62vh;overflow:auto;}
+  .case-item{
+    text-align:left;width:100%;background:transparent;border:1px solid transparent;border-radius:11px;
+    padding:12px 13px;cursor:pointer;display:flex;flex-direction:column;gap:7px;transition:background .12s,border-color .12s;
+  }
+  .case-item:hover{background:var(--surface-2)}
+  .case-item[aria-current="true"]{background:var(--surface-2);border-color:var(--line);box-shadow:inset 3px 0 0 var(--brass)}
+  .case-title{font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.3}
+  .case-meta{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .case-amt{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--ink-80);font-weight:500}
+  .status{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;white-space:nowrap}
+  .status.intake{background:#eceef5;color:#5b5f86}
+  .status.analyzed{background:var(--brass-tint);color:#8a6418}
+  .status.negotiating{background:#e7eef9;color:#2d5aa0}
+  .status.settled{background:var(--floor-tint);color:#236048}
+  .status.escalated{background:var(--ceiling-tint);color:#8c372e}
+
+  /* ---------- intake form ---------- */
+  .intake{padding:8px 18px 18px;border-top:1px solid var(--line-2);display:none}
+  .intake.open{display:block}
+  .field{margin-top:11px}
+  .field label{display:block;font-size:11.5px;font-weight:600;letter-spacing:.02em;color:var(--ink-60);margin-bottom:5px}
+  .field input,.field select,.field textarea{
+    width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 10px;font:inherit;font-size:13px;color:var(--ink);background:var(--surface);
+  }
+  .field textarea{resize:vertical;min-height:58px}
+  .field input:focus,.field select:focus,.field textarea:focus,.case-item:focus-visible,.btn:focus-visible,.chip:focus-visible,.tab:focus-visible{
+    outline:2px solid var(--brass);outline-offset:2px
+  }
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+  /* ---------- main ---------- */
+  .stage{display:flex;flex-direction:column;gap:20px;min-width:0}
+  .empty-stage{padding:64px 32px;text-align:center;color:var(--ink-40)}
+  .empty-stage .serif{font-size:22px;color:var(--ink-60);margin-bottom:6px}
+
+  .case-head{padding:20px 22px}
+  .case-head .top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  .case-head h1{font-size:23px;font-weight:600;max-width:62ch}
+  .case-id{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-40);margin-top:2px}
+  .parties{display:flex;gap:22px;flex-wrap:wrap;margin-top:16px}
+  .party{display:flex;flex-direction:column;gap:2px}
+  .party .role{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+  .party.claimant .role{color:var(--floor)}
+  .party.respondent .role{color:var(--ceiling)}
+  .party .name{font-size:14px;font-weight:600;color:var(--ink)}
+  .party .vs{align-self:center;color:var(--ink-40);font-family:"Fraunces",serif;font-style:italic;font-size:15px}
+  .claimline{margin-top:16px;display:flex;align-items:baseline;gap:10px;border-top:1px solid var(--line-2);padding-top:14px}
+  .claimline .lbl{font-size:12px;color:var(--ink-60);font-weight:600}
+  .claimline .amt{font-family:"Fraunces",serif;font-size:26px;font-weight:600;color:var(--ink)}
+
+  /* ---------- spectrum (signature) ---------- */
+  .spectrum-card{padding:20px 22px 14px}
+  .spectrum-card .head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:6px}
+  .spectrum-card .head .eyebrow{margin-bottom:0}
+  .spectrum-card .head h2{font-size:17px}
+  .spectrum-wrap{position:relative;width:100%}
+  svg.spectrum{width:100%;height:auto;display:block;overflow:visible}
+  .spectrum-empty{padding:30px 10px 22px;text-align:center;color:var(--ink-40);font-size:14px}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;padding-top:12px;border-top:1px solid var(--line-2)}
+  .legend span{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink-60);font-weight:500}
+  .legend .sw{width:11px;height:11px;border-radius:3px}
+  .legend .sw.floor{background:var(--floor)}
+  .legend .sw.ceiling{background:var(--ceiling)}
+  .legend .sw.zone{background:var(--brass-soft);border:1px solid var(--brass)}
+  .legend .sw.rec{background:var(--brass);transform:rotate(45deg);border-radius:1px}
+
+  /* ---------- tabs ---------- */
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);padding:0 8px;margin-top:2px}
+  .tab{
+    background:transparent;border:none;border-bottom:2px solid transparent;
+    padding:13px 16px;font-size:13.5px;font-weight:600;color:var(--ink-40);cursor:pointer;margin-bottom:-1px;
+    display:inline-flex;align-items:center;gap:8px;
+  }
+  .tab:hover{color:var(--ink-80)}
+  .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--brass)}
+  .tab .count{font-family:"IBM Plex Mono",monospace;font-size:11px;background:var(--surface-2);border:1px solid var(--line-2);border-radius:999px;padding:1px 6px;color:var(--ink-60)}
+  .tabpanel{padding:20px 22px}
+  .tabpanel[hidden]{display:none}
+
+  /* ---------- analysis ---------- */
+  .summary{font-size:15px;color:var(--ink-80);line-height:1.6;max-width:74ch}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
+  @media (max-width:760px){ .metrics{grid-template-columns:repeat(2,1fr)} }
+  .metric{background:var(--surface-2);border:1px solid var(--line-2);border-radius:11px;padding:13px 14px}
+  .metric .k{font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-40)}
+  .metric .v{font-family:"IBM Plex Mono",monospace;font-size:19px;font-weight:600;color:var(--ink);margin-top:5px}
+  .metric .v small{font-size:12px;color:var(--ink-40);font-weight:500}
+
+  .subhead{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-40);margin:24px 0 10px;font-family:"IBM Plex Mono",monospace}
+  .issues{display:flex;flex-wrap:wrap;gap:8px}
+  .issue{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:12.5px;color:var(--ink-80);font-weight:500}
+
+  .rationale{list-style:none;margin:0;padding:0;counter-reset:r}
+  .rationale li{
+    position:relative;padding:11px 0 11px 38px;border-bottom:1px dashed var(--line-2);
+    font-size:13.5px;color:var(--ink-80);line-height:1.55;counter-increment:r;
+  }
+  .rationale li::before{
+    content:counter(r,decimal-leading-zero);position:absolute;left:0;top:11px;
+    font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;color:var(--brass);
+  }
+  .rationale li:last-child{border-bottom:none}
+  .recs{display:flex;flex-direction:column;gap:9px;margin-top:6px}
+  .rec{display:flex;gap:11px;align-items:flex-start;background:var(--brass-tint);border:1px solid var(--brass-soft);border-radius:11px;padding:12px 14px;font-size:13.5px;color:#6f520f;line-height:1.5}
+  .rec svg{flex:none;margin-top:2px}
+
+  .disclaimer{margin-top:20px;font-size:12px;color:var(--ink-40);border-left:2px solid var(--line);padding:4px 0 4px 12px;line-height:1.5;max-width:80ch}
+
+  /* ---------- negotiation ---------- */
+  .neg-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+  .offer-form{background:var(--surface-2);border:1px solid var(--line-2);border-radius:12px;padding:16px;margin-bottom:18px}
+  .offer-form .row{display:grid;grid-template-columns:1fr 1fr auto;gap:14px;align-items:end}
+  @media (max-width:680px){ .offer-form .row{grid-template-columns:1fr 1fr} }
+  .offer-form .hint{font-size:12px;color:var(--ink-40);margin-top:10px}
+  .offer-input label{display:block;font-size:11.5px;font-weight:600;color:var(--ink-60);margin-bottom:6px}
+  .offer-input label.claimant{color:var(--floor)}
+  .offer-input label.respondent{color:var(--ceiling)}
+  .offer-input .inwrap{display:flex;align-items:center;border:1px solid var(--line);border-radius:9px;background:#fff;overflow:hidden}
+  .offer-input .inwrap span{padding:0 10px;color:var(--ink-40);font-family:"IBM Plex Mono",monospace;border-right:1px solid var(--line-2);align-self:stretch;display:flex;align-items:center}
+  .offer-input input{border:none;padding:10px;font-family:"IBM Plex Mono",monospace;font-size:14px;width:100%;outline:none}
+
+  .rounds{list-style:none;margin:0;padding:0;position:relative}
+  .rounds::before{content:"";position:absolute;left:15px;top:6px;bottom:6px;width:2px;background:var(--line-2)}
+  .round{position:relative;padding:0 0 18px 44px}
+  .round .node{position:absolute;left:8px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid var(--ink-40);z-index:1}
+  .round.settled .node{border-color:var(--floor);background:var(--floor)}
+  .round.escalated .node{border-color:var(--esc);background:var(--esc)}
+  .round.continue .node{border-color:var(--brass)}
+  .round .rhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .round .rnum{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;color:var(--ink-40);text-transform:uppercase;letter-spacing:.08em}
+  .round .offers{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--ink-80)}
+  .round .offers .c{color:var(--floor)} .round .offers .r{color:var(--ceiling)}
+  .round .otag{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px}
+  .round.settled .otag{background:var(--floor-tint);color:#236048}
+  .round.escalated .otag{background:var(--ceiling-tint);color:#8c372e}
+  .round.continue .otag{background:var(--brass-tint);color:#8a6418}
+  .round .note{font-size:13px;color:var(--ink-60);margin-top:6px;line-height:1.5}
+  .nudges{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:11px}
+  @media (max-width:680px){ .nudges{grid-template-columns:1fr} }
+  .nudge{border:1px solid var(--line-2);border-radius:10px;padding:11px 13px;background:#fff}
+  .nudge .to{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:6px}
+  .nudge.claimant .to{color:var(--floor)} .nudge.respondent .to{color:var(--ceiling)}
+  .nudge .lock{font-size:10px;color:var(--ink-40);font-weight:600;text-transform:none;letter-spacing:0}
+  .nudge .msg{font-size:12.5px;color:var(--ink-80);line-height:1.5}
+  .nudge .sug{font-family:"IBM Plex Mono",monospace;font-size:12px;margin-top:8px;color:var(--ink-60)}
+
+  /* ---------- agreement ---------- */
+  .agreement{background:#fcfcfa;border:1px solid var(--line);border-radius:12px;padding:0;overflow:hidden}
+  .agreement .doc-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line-2);background:#fff}
+  .agreement .doc-top .meta{display:flex;gap:18px;flex-wrap:wrap}
+  .agreement .doc-top .meta div{font-size:12px;color:var(--ink-60)}
+  .agreement .doc-top .meta b{font-family:"IBM Plex Mono",monospace;color:var(--ink);font-weight:600;display:block;margin-top:2px}
+  .agreement pre{
+    margin:0;padding:24px 26px;font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.75;color:var(--ink-80);
+    white-space:pre-wrap;word-break:break-word;max-height:540px;overflow:auto;
+  }
+
+  /* ---------- toast & loader ---------- */
+  .toast-wrap{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:50;display:flex;flex-direction:column;gap:8px;align-items:center}
+  .toast{background:var(--ink);color:#fff;padding:11px 16px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);max-width:90vw}
+  .toast.err{background:var(--ceiling)}
+  .spin{width:15px;height:15px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+  .btn.brass .spin,.btn .spin{vertical-align:-2px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* spectrum animation */
+  .spectrum .draw{animation:draw .6s ease forwards}
+  @keyframes draw{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms!important;transition-duration:.001ms!important}
+  }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="mark">Samādhān<span class="dot">.</span></span>
+        <span class="tag">Settlement Intelligence &amp; Autonomous Negotiation</span>
+      </div>
+      <div class="topbar-spacer"></div>
+      <span id="providerPill" class="provider-pill"><span class="led"></span><span id="providerName">offline model</span></span>
+    </div>
+  </header>
+
+  <main class="shell">
+    <!-- LEFT: docket -->
+    <aside class="docket">
+      <div class="panel">
+        <div class="docket-head">
+          <h2>Docket</h2>
+          <button id="newToggle" class="btn ghost sm" aria-expanded="false">+ New case</button>
+        </div>
+        <div class="filters" id="filters" role="group" aria-label="Filter by status">
+          <button class="chip" data-f="all" aria-pressed="true">All</button>
+          <button class="chip" data-f="intake" aria-pressed="false">Intake</button>
+          <button class="chip" data-f="analyzed" aria-pressed="false">Analyzed</button>
+          <button class="chip" data-f="settled" aria-pressed="false">Settled</button>
+          <button class="chip" data-f="escalated" aria-pressed="false">Escalated</button>
+        </div>
+
+        <div class="intake" id="intake">
+          <div class="field">
+            <label for="f-title">Case title</label>
+            <input id="f-title" placeholder="e.g. Dishonoured cheque — A v. B" />
+          </div>
+          <div class="field">
+            <label for="f-cat">Category</label>
+            <select id="f-cat">
+              <option value="cheque_bounce">Cheque bounce (s.138 NI Act)</option>
+              <option value="loan_default">Loan default</option>
+              <option value="ecommerce">E-commerce</option>
+              <option value="rent_tenancy">Rent / tenancy</option>
+              <option value="service_deficiency">Service deficiency</option>
+              <option value="generic">Generic commercial</option>
+            </select>
+          </div>
+          <div class="grid2">
+            <div class="field"><label for="f-claimant">Claimant</label><input id="f-claimant" placeholder="Claimant name"/></div>
+            <div class="field"><label for="f-respondent">Respondent</label><input id="f-respondent" placeholder="Respondent name"/></div>
+          </div>
+          <div class="field"><label for="f-amount">Claim amount (₹)</label><input id="f-amount" class="mono" inputmode="numeric" placeholder="250000"/></div>
+          <div class="field"><label for="f-narrative">Claimant's account</label><textarea id="f-narrative" placeholder="What happened, briefly…"></textarea></div>
+          <div class="field"><label for="f-response">Respondent's reply (optional)</label><textarea id="f-response" placeholder="Any defence raised, inability to pay, etc."></textarea></div>
+          <button id="createBtn" class="btn brass block" style="margin-top:14px">Open case</button>
+        </div>
+
+        <ul class="case-list" id="caseList" aria-label="Disputes"></ul>
+      </div>
+    </aside>
+
+    <!-- RIGHT: stage -->
+    <section class="stage" id="stage">
+      <div class="panel empty-stage">
+        <div class="serif">Select a case from the docket</div>
+        <div>Or open a new one. Samādhān computes a defensible settlement range, runs a confidential negotiation, and drafts the agreement.</div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+"use strict";
+
+/* ---------------- helpers ---------------- */
+const API = ""; // same origin
+const $ = (s,el=document)=>el.querySelector(s);
+const $$ = (s,el=document)=>[...el.querySelectorAll(s)];
+const SVGNS = "http://www.w3.org/2000/svg";
+
+function inr(n){
+  if(n===null||n===undefined||isNaN(n)) return "—";
+  let neg = n<0; n=Math.abs(Math.round(n));
+  let s=String(n);
+  if(s.length>3){
+    let last3=s.slice(-3), rest=s.slice(0,-3);
+    rest=rest.replace(/\B(?=(\d{2})+(?!\d))/g,",");
+    s=rest+","+last3;
+  }
+  return "₹"+(neg?"-":"")+s;
+}
+function pct(x){ return Math.round((x||0)*100)+"%"; }
+function humanCat(c){
+  return ({loan_default:"Loan default",cheque_bounce:"Cheque bounce",ecommerce:"E-commerce",
+    rent_tenancy:"Rent / tenancy",service_deficiency:"Service deficiency",generic:"Commercial"})[c]||c;
+}
+async function api(path, opts){
+  const res = await fetch(API+path, Object.assign({headers:{"Content-Type":"application/json"}}, opts));
+  let body=null; try{ body=await res.json(); }catch(e){}
+  if(!res.ok){ throw new Error((body&&body.error)||("Request failed ("+res.status+")")); }
+  return body;
+}
+let toastTimer=null;
+function toast(msg,isErr){
+  const w=$("#toastWrap"); w.innerHTML="";
+  const t=document.createElement("div"); t.className="toast"+(isErr?" err":""); t.textContent=msg;
+  w.appendChild(t);
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{ t.style.opacity="0"; t.style.transition="opacity .3s"; setTimeout(()=>w.innerHTML="",300); }, isErr?5200:2600);
+}
+
+/* ---------------- state ---------------- */
+const state = { disputes:[], selectedId:null, filter:"all", tab:"analysis", busy:false };
+
+/* ---------------- load ---------------- */
+async function loadAll(selectFirst){
+  try{
+    const data = await api("/api/v1/disputes");
+    state.disputes = data.disputes||[];
+    if(state.disputes.length){
+      // provider name from any analysis already present, else default label
+      const withProv = state.disputes.find(d=>d.analysis&&d.analysis.provider);
+      setProvider(withProv?withProv.analysis.provider:null);
+    }
+    if(selectFirst && !state.selectedId && state.disputes.length){
+      state.selectedId = state.disputes[0].id;
+    }
+    renderList(); renderStage();
+  }catch(e){ toast(e.message,true); }
+}
+function setProvider(name){
+  const live = name && name!=="offline-model";
+  $("#providerPill").classList.toggle("live", !!live);
+  $("#providerName").textContent = live ? (name+" · live") : "offline model";
+}
+function selected(){ return state.disputes.find(d=>d.id===state.selectedId)||null; }
+function replaceDispute(d){
+  const i=state.disputes.findIndex(x=>x.id===d.id);
+  if(i>=0) state.disputes[i]=d; else state.disputes.unshift(d);
+}
+
+/* ---------------- docket list ---------------- */
+function renderList(){
+  const ul=$("#caseList"); ul.innerHTML="";
+  const items = state.disputes.filter(d=>state.filter==="all"||d.status===state.filter);
+  if(!items.length){
+    const li=document.createElement("li");
+    li.style.cssText="padding:18px 13px;color:var(--ink-40);font-size:13px";
+    li.textContent = state.disputes.length? "No cases match this filter." : "No cases yet — open one above.";
+    ul.appendChild(li); return;
+  }
+  for(const d of items){
+    const li=document.createElement("li");
+    const b=document.createElement("button");
+    b.className="case-item"; b.setAttribute("aria-current", d.id===state.selectedId);
+    b.onclick=()=>{ state.selectedId=d.id; state.tab="analysis"; renderList(); renderStage(); };
+    b.innerHTML = `
+      <div class="case-title">${esc(d.title||humanCat(d.category))}</div>
+      <div class="case-meta">
+        <span class="case-amt">${inr(d.claim_amount)}</span>
+        <span class="status ${d.status}">${d.status}</span>
+      </div>`;
+    li.appendChild(b); ul.appendChild(li);
+  }
+}
+function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ---------------- stage ---------------- */
+function renderStage(){
+  const stage=$("#stage"); const d=selected();
+  if(!d){ return; }
+  const a=d.analysis;
+  const negCount = d.negotiation && d.negotiation.rounds ? d.negotiation.rounds.length : 0;
+
+  stage.innerHTML = `
+    <div class="panel case-head">
+      <div class="top">
+        <div>
+          <div class="eyebrow">${humanCat(d.category)}</div>
+          <h1>${esc(d.title||humanCat(d.category))}</h1>
+          <div class="case-id">${d.id}</div>
+        </div>
+        <span class="status ${d.status}" style="font-size:11.5px">${d.status}</span>
+      </div>
+      <div class="parties">
+        <div class="party claimant"><span class="role">Claimant</span><span class="name">${esc(d.claimant.name)}</span></div>
+        <span class="vs">v.</span>
+        <div class="party respondent"><span class="role">Respondent</span><span class="name">${esc(d.respondent.name)}</span></div>
+      </div>
+      <div class="claimline"><span class="lbl">Amount claimed</span><span class="amt">${inr(d.claim_amount)}</span></div>
+    </div>
+
+    <div class="panel spectrum-card">
+      <div class="head">
+        <div><div class="eyebrow">Signature view</div><h2>Settlement spectrum</h2></div>
+        ${a?"":`<button class="btn brass sm" id="analyzeTop">Run analysis</button>`}
+      </div>
+      <div id="spectrumHost"></div>
+    </div>
+
+    <div class="panel">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" data-tab="analysis" aria-selected="${state.tab==='analysis'}">Analysis</button>
+        <button class="tab" role="tab" data-tab="negotiation" aria-selected="${state.tab==='negotiation'}">Negotiation ${negCount?`<span class="count">${negCount}</span>`:""}</button>
+        <button class="tab" role="tab" data-tab="agreement" aria-selected="${state.tab==='agreement'}">Agreement ${d.settlement?`<span class="count">✓</span>`:""}</button>
+      </div>
+      <div class="tabpanel" data-panel="analysis" ${state.tab==="analysis"?"":"hidden"} id="panel-analysis"></div>
+      <div class="tabpanel" data-panel="negotiation" ${state.tab==="negotiation"?"":"hidden"} id="panel-negotiation"></div>
+      <div class="tabpanel" data-panel="agreement" ${state.tab==="agreement"?"":"hidden"} id="panel-agreement"></div>
+    </div>
+  `;
+
+  // wire tabs
+  $$(".tab",stage).forEach(t=>t.onclick=()=>{ state.tab=t.dataset.tab; renderStage(); });
+  const at=$("#analyzeTop"); if(at) at.onclick=()=>runAnalyze(d.id, at);
+
+  drawSpectrum($("#spectrumHost"), d);
+  renderAnalysis($("#panel-analysis"), d);
+  renderNegotiation($("#panel-negotiation"), d);
+  renderAgreement($("#panel-agreement"), d);
+}
+
+/* ---------------- THE SPECTRUM ---------------- */
+function drawSpectrum(host, d){
+  host.innerHTML="";
+  const a=d.analysis;
+  if(!a){
+    host.innerHTML=`<div class="spectrum-empty">The settlement zone appears here once the case is analysed.<br>
+      <span style="font-size:12.5px;color:var(--ink-40)">Floor, ceiling, the Zone of Possible Agreement, and the recommended figure.</span></div>`;
+    return;
+  }
+
+  // domain
+  const claim=d.claim_amount;
+  const offers=[];
+  if(d.negotiation && d.negotiation.rounds){
+    d.negotiation.rounds.forEach(r=>{ offers.push(r.claimant_ask, r.respondent_pay); });
+  }
+  const settled = d.settlement ? d.settlement.amount : (d.negotiation&&d.negotiation.settled_amount)||null;
+  const maxVal = Math.max(claim, a.respondent_reservation, a.claimant_reservation, a.recommended_settlement, settled||0, ...offers);
+  const domainMax = maxVal*1.06 || 1;
+
+  // geometry
+  const W=1000, H=232, padL=22, padR=22, axisY=150;
+  const x = v => padL + (Math.max(0,Math.min(v,domainMax))/domainMax)*(W-padL-padR);
+
+  const floorX=x(a.claimant_reservation), ceilX=x(a.respondent_reservation), recX=x(a.recommended_settlement), claimX=x(claim);
+  const zopa=a.zopa_exists;
+
+  const svg=document.createElementNS(SVGNS,"svg");
+  svg.setAttribute("class","spectrum draw");
+  svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  svg.setAttribute("role","img");
+  svg.setAttribute("aria-label",
+    zopa? `Settlement zone from ${inr(a.claimant_reservation)} to ${inr(a.respondent_reservation)}, recommended ${inr(a.recommended_settlement)}`
+        : `No overlap: claimant floor ${inr(a.claimant_reservation)} exceeds respondent ceiling ${inr(a.respondent_reservation)}`);
+
+  const NS=(t,attrs,txt)=>{ const e=document.createElementNS(SVGNS,t); for(const k in attrs) e.setAttribute(k,attrs[k]); if(txt!=null) e.textContent=txt; return e; };
+
+  // hatch pattern for no-overlap
+  const defs=NS("defs"); 
+  defs.innerHTML=`<pattern id="hatch" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="7" height="7" fill="rgba(176,74,63,.06)"/><line x1="0" y1="0" x2="0" y2="7" stroke="rgba(176,74,63,.5)" stroke-width="1.4"/></pattern>`;
+  svg.appendChild(defs);
+
+  // baseline track
+  svg.appendChild(NS("line",{x1:padL,y1:axisY,x2:W-padR,y2:axisY,stroke:"#cfd2df","stroke-width":"2","stroke-linecap":"round"}));
+
+  // end caps ₹0 and claim
+  svg.appendChild(NS("line",{x1:padL,y1:axisY-7,x2:padL,y2:axisY+7,stroke:"#b9bdce","stroke-width":"2"}));
+  svg.appendChild(NS("text",{x:padL,y:axisY+26,"font-family":"IBM Plex Mono","font-size":"12",fill:"#878ba9"},"₹0"));
+  // claim marker
+  svg.appendChild(NS("line",{x1:claimX,y1:axisY-9,x2:claimX,y2:axisY+9,stroke:"#b9bdce","stroke-width":"2","stroke-dasharray":"2 3"}));
+  const claimLbl=NS("text",{x:claimX,y:axisY+26,"font-family":"IBM Plex Mono","font-size":"12",fill:"#878ba9","text-anchor":"end"},"Claim "+inr(claim));
+  svg.appendChild(claimLbl);
+
+  if(zopa){
+    // ZOPA band
+    const bandY=axisY-15, bandH=30;
+    const band=NS("rect",{x:floorX,y:bandY,width:Math.max(2,ceilX-floorX),height:bandH,rx:8,fill:"var(--brass-tint)",stroke:"var(--brass-soft)","stroke-width":"1.5"});
+    svg.appendChild(band);
+    // zone label above
+    const midZ=(floorX+ceilX)/2;
+    svg.appendChild(NS("text",{x:midZ,y:bandY-12,"text-anchor":"middle","font-family":"IBM Plex Mono","font-size":"10.5","letter-spacing":"1.5",fill:"var(--brass)","font-weight":"600"},"ZONE OF POSSIBLE AGREEMENT"));
+    svg.appendChild(NS("text",{x:midZ,y:bandY-1+bandH+15,"text-anchor":"middle","font-family":"IBM Plex Mono","font-size":"11",fill:"#878ba9"},"width "+inr(a.zopa_width)));
+  } else {
+    // no-overlap gap (ceiling .. floor), hatched
+    const lo=Math.min(ceilX,floorX), hi=Math.max(ceilX,floorX);
+    svg.appendChild(NS("rect",{x:lo,y:axisY-15,width:Math.max(2,hi-lo),height:30,rx:8,fill:"url(#hatch)",stroke:"rgba(176,74,63,.45)","stroke-width":"1.2","stroke-dasharray":"4 3"}));
+    const midG=(lo+hi)/2;
+    svg.appendChild(NS("text",{x:midG,y:axisY-27,"text-anchor":"middle","font-family":"IBM Plex Mono","font-size":"10.5","letter-spacing":"1",fill:"var(--ceiling)","font-weight":"600"},"NO OVERLAP"));
+    svg.appendChild(NS("text",{x:midG,y:axisY+30,"text-anchor":"middle","font-family":"IBM Plex Mono","font-size":"11",fill:"var(--ceiling)"},"gap "+inr(Math.abs(a.claimant_reservation-a.respondent_reservation))));
+  }
+
+  // floor marker (claimant) — below axis
+  marker(svg,NS,floorX,axisY,"floor","Claimant floor",inr(a.claimant_reservation),"down");
+  // ceiling marker (respondent)
+  marker(svg,NS,ceilX,axisY,"ceiling","Respondent ceiling",inr(a.respondent_reservation),"down");
+
+  // recommended — brass diamond above with dropline
+  if(a.recommended_settlement>0){
+    svg.appendChild(NS("line",{x1:recX,y1:axisY-30,x2:recX,y2:axisY,stroke:"var(--brass)","stroke-width":"1.5"}));
+    const dy=axisY-30;
+    svg.appendChild(NS("path",{d:`M ${recX} ${dy-9} L ${recX+8} ${dy} L ${recX} ${dy+9} L ${recX-8} ${dy} Z`,fill:"var(--brass)"}));
+    const rl=zopa?"Recommended":"Capacity-limited";
+    svg.appendChild(NS("text",{x:recX,y:dy-15,"text-anchor":"middle","font-family":"Fraunces","font-size":"13",fill:"var(--ink)","font-weight":"600"},rl+" "+inr(a.recommended_settlement)));
+  }
+
+  // negotiation offer markers (convergence)
+  if(d.negotiation && d.negotiation.rounds && d.negotiation.rounds.length){
+    const rounds=d.negotiation.rounds;
+    rounds.forEach((r,i)=>{
+      const last = i===rounds.length-1;
+      const op = last?1:0.28+0.5*(i/Math.max(1,rounds.length-1));
+      const rad = last?6:4;
+      // claimant offer above axis, respondent below
+      svg.appendChild(NS("circle",{cx:x(r.claimant_ask),cy:axisY-3,r:rad,fill:"none",stroke:"var(--floor)","stroke-width":last?"2.5":"1.6",opacity:op}));
+      svg.appendChild(NS("circle",{cx:x(r.respondent_pay),cy:axisY+3,r:rad,fill:"none",stroke:"var(--ceiling)","stroke-width":last?"2.5":"1.6",opacity:op}));
+    });
+  }
+
+  // settled star
+  if(settled){
+    const sx=x(settled);
+    svg.appendChild(NS("line",{x1:sx,y1:axisY,x2:sx,y2:axisY+34,stroke:"var(--floor)","stroke-width":"1.5"}));
+    svg.appendChild(star(NS,sx,axisY+44,8,"var(--floor)"));
+    svg.appendChild(NS("text",{x:sx,y:axisY+62,"text-anchor":"middle","font-family":"Fraunces","font-size":"13",fill:"#236048","font-weight":"600"},"Settled "+inr(settled)));
+  }
+
+  host.appendChild(svg);
+
+  // legend
+  const leg=document.createElement("div"); leg.className="legend";
+  leg.innerHTML = `
+    <span><span class="sw floor"></span>Claimant floor (accept above)</span>
+    <span><span class="sw ceiling"></span>Respondent ceiling (pay below)</span>
+    ${zopa?`<span><span class="sw zone"></span>Agreement zone</span>`:`<span><span class="sw" style="background:url(#hatch);border:1px solid var(--ceiling)"></span>No-overlap gap</span>`}
+    <span><span class="sw rec"></span>Recommended figure</span>`;
+  host.appendChild(leg);
+}
+function marker(svg,NS,xp,axisY,cls,label,val,dir){
+  const col = cls==="floor"?"var(--floor)":"var(--ceiling)";
+  // tick
+  svg.appendChild(NS("line",{x1:xp,y1:axisY-11,x2:xp,y2:axisY+11,stroke:col,"stroke-width":"3","stroke-linecap":"round"}));
+  // dot
+  svg.appendChild(NS("circle",{cx:xp,cy:axisY,r:"4.5",fill:col}));
+  // labels stacked below axis (floor left-biased, ceiling right-biased to reduce overlap)
+  const anchor = cls==="floor" ? "start" : "end";
+  const ox = cls==="floor" ? 7 : -7;
+  svg.appendChild(NS("text",{x:xp+ox,y:axisY+44,"text-anchor":anchor,"font-family":"Inter","font-size":"11.5",fill:col,"font-weight":"700"},label));
+  svg.appendChild(NS("text",{x:xp+ox,y:axisY+60,"text-anchor":anchor,"font-family":"IBM Plex Mono","font-size":"12.5",fill:"var(--ink)","font-weight":"500"},val));
+}
+function star(NS,cx,cy,r,fill){
+  let pts=""; for(let i=0;i<10;i++){ const rad=i%2?r*0.45:r; const ang=Math.PI/5*i-Math.PI/2; pts+=`${cx+rad*Math.cos(ang)},${cy+rad*Math.sin(ang)} `; }
+  return NS("polygon",{points:pts.trim(),fill:fill});
+}
+
+/* ---------------- analysis panel ---------------- */
+function renderAnalysis(host, d){
+  const a=d.analysis;
+  if(!a){
+    host.innerHTML=`<div style="text-align:center;padding:30px 10px;color:var(--ink-40)">
+      <div class="serif" style="font-size:18px;color:var(--ink-60);margin-bottom:8px">Not analysed yet</div>
+      <div style="margin-bottom:16px;font-size:14px">Run the settlement-intelligence engine to compute each side's realistic alternative and the fair range between them.</div>
+      <button class="btn brass" id="analyzeBtn">Run analysis</button></div>`;
+    $("#analyzeBtn",host).onclick=(e)=>runAnalyze(d.id, e.target);
+    return;
+  }
+  host.innerHTML = `
+    <p class="summary">${esc(a.summary)}</p>
+    <div class="metrics">
+      <div class="metric"><div class="k">Merits probability</div><div class="v">${pct(a.claim_strength)} <small>· conf ${pct(a.confidence)}</small></div></div>
+      <div class="metric"><div class="k">Collectability</div><div class="v">${pct(a.recovery_rate)}</div></div>
+      <div class="metric"><div class="k">Time to resolve</div><div class="v">${a.time_to_resolution_years.toFixed(1)}<small> yrs</small></div></div>
+      <div class="metric"><div class="k">Recommended</div><div class="v" style="color:var(--brass)">${inr(a.recommended_settlement)}</div></div>
+    </div>
+
+    <div class="subhead">Key issues</div>
+    <div class="issues">${(a.key_issues||[]).map(i=>`<span class="issue">${esc(i)}</span>`).join("")}</div>
+
+    <div class="subhead">How the range was derived</div>
+    <ol class="rationale">${(a.rationale||[]).map(r=>`<li>${esc(r)}</li>`).join("")}</ol>
+
+    <div class="subhead">Recommendations</div>
+    <div class="recs">${(a.recommendations||[]).map(r=>`<div class="rec">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8a6418" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span>${esc(r)}</span></div>`).join("")}</div>
+
+    <p class="disclaimer">Samādhān provides decision-support derived from a transparent economic model. It is not legal advice and not an adjudication of the merits. A human neutral remains available for escalation at any point.</p>
+  `;
+}
+
+/* ---------------- negotiation panel ---------------- */
+function renderNegotiation(host, d){
+  const a=d.analysis;
+  if(!a){
+    host.innerHTML=`<div style="text-align:center;padding:30px 10px;color:var(--ink-40);font-size:14px">Analyse the case first to open negotiation.</div>`;
+    return;
+  }
+  const settled = !!d.settlement;
+  const neg = d.negotiation;
+  const closed = settled || (neg && neg.status!=="open");
+
+  const rec=a.recommended_settlement;
+  let actions = "";
+  if(!closed){
+    actions = `
+      <div class="neg-actions">
+        <button class="btn brass" id="acceptBtn">Both accept ${inr(rec)}</button>
+        <button class="btn ghost" id="simBtn">Auto-simulate rounds</button>
+        <span style="font-size:12px;color:var(--ink-40)">Or enter confidential offers below.</span>
+      </div>
+      <div class="offer-form">
+        <div class="row">
+          <div class="offer-input"><label class="claimant">Claimant asks (private)</label>
+            <div class="inwrap"><span>₹</span><input id="ask" inputmode="numeric" placeholder="${a.respondent_reservation}"></div></div>
+          <div class="offer-input"><label class="respondent">Respondent offers (private)</label>
+            <div class="inwrap"><span>₹</span><input id="pay" inputmode="numeric" placeholder="${a.claimant_reservation}"></div></div>
+          <button class="btn" id="submitOffers">Submit round</button>
+        </div>
+        <div class="hint">Neither figure is shown to the other side. The engine reveals only whether they crossed, and sends each party a private nudge grounded in their own alternative.</div>
+      </div>`;
+  }
+
+  let timeline="";
+  if(neg && neg.rounds && neg.rounds.length){
+    timeline = `<ol class="rounds">` + neg.rounds.map(r=>{
+      const cls = r.outcome;
+      const tag = r.outcome==="settled"?"Settled":r.outcome==="escalated"?"Escalated":"Gap remains";
+      let nud="";
+      if(r.nudges && r.nudges.length){
+        nud=`<div class="nudges">`+r.nudges.map(n=>`
+          <div class="nudge ${n.party}">
+            <div class="to">${n.party==="claimant"?"To claimant":"To respondent"} <span class="lock">🔒 private</span></div>
+            <div class="msg">${esc(n.message)}</div>
+            <div class="sug">Suggested: ${inr(n.suggested_offer)}</div>
+          </div>`).join("")+`</div>`;
+      }
+      return `<li class="round ${cls}"><span class="node"></span>
+        <div class="rhead">
+          <span class="rnum">Round ${r.number}</span>
+          <span class="offers">ask <span class="c">${inr(r.claimant_ask)}</span> · offer <span class="r">${inr(r.respondent_pay)}</span></span>
+          <span class="otag">${tag}</span>
+          ${r.outcome==="settled"?`<span class="offers" style="color:var(--floor)">→ ${inr(r.settled_amount)}</span>`:""}
+        </div>
+        <div class="note">${esc(r.note)}</div>
+        ${nud}
+      </li>`;
+    }).join("") + `</ol>`;
+  } else if(closed){
+    timeline = `<div style="color:var(--ink-40);font-size:13px">Settled directly on the recommended figure — no bidding rounds were needed.</div>`;
+  }
+
+  host.innerHTML = actions + (timeline?`<div class="subhead">Negotiation log</div>${timeline}`:"");
+
+  const ab=$("#acceptBtn",host); if(ab) ab.onclick=()=>runAccept(d.id,ab);
+  const sb=$("#simBtn",host); if(sb) sb.onclick=()=>runSim(d.id,sb);
+  const so=$("#submitOffers",host); if(so) so.onclick=()=>runOffers(d.id,so);
+}
+
+/* ---------------- agreement panel ---------------- */
+function renderAgreement(host, d){
+  if(!d.settlement){
+    host.innerHTML=`<div style="text-align:center;padding:30px 10px;color:var(--ink-40);font-size:14px">
+      <div class="serif" style="font-size:18px;color:var(--ink-60);margin-bottom:6px">No agreement yet</div>
+      The settlement agreement is drafted automatically the moment the matter resolves.</div>`;
+    return;
+  }
+  const s=d.settlement;
+  host.innerHTML = `
+    <div class="agreement">
+      <div class="doc-top">
+        <div class="meta">
+          <div>Settlement sum<b>${inr(s.amount)}</b></div>
+          <div>Method<b>${s.method==="mediator_proposal"?"Mediator's proposal":"Negotiated"}</b></div>
+          <div>Reference<b>${d.id}</b></div>
+        </div>
+        <button class="btn ghost sm" id="copyAgreement">Copy text</button>
+      </div>
+      <pre id="agreementText">${esc(s.agreement_text)}</pre>
+    </div>`;
+  $("#copyAgreement",host).onclick=async()=>{
+    try{ await navigator.clipboard.writeText(s.agreement_text); toast("Agreement copied"); }
+    catch(e){ toast("Copy failed — select the text manually",true); }
+  };
+}
+
+/* ---------------- actions ---------------- */
+function setBtnLoading(btn,on,label){
+  if(!btn) return;
+  if(on){ btn.dataset.html=btn.innerHTML; btn.innerHTML=`<span class="spin"></span> ${label||"Working…"}`; btn.disabled=true; }
+  else { if(btn.dataset.html) btn.innerHTML=btn.dataset.html; btn.disabled=false; }
+}
+async function runAnalyze(id,btn){
+  setBtnLoading(btn,true,"Analysing…");
+  try{
+    const d=await api(`/api/v1/disputes/${id}/analyze`,{method:"POST"});
+    if(d.analysis) setProvider(d.analysis.provider);
+    replaceDispute(d); state.tab="analysis"; renderList(); renderStage();
+    toast(d.analysis && d.analysis.zopa_exists ? "Analysis complete — agreement zone found" : "Analysis complete — capacity-limited, see recommendations");
+  }catch(e){ toast(e.message,true); setBtnLoading(btn,false); }
+}
+async function runAccept(id,btn){
+  setBtnLoading(btn,true,"Settling…");
+  try{
+    const d=await api(`/api/v1/disputes/${id}/accept`,{method:"POST"});
+    replaceDispute(d); state.tab="agreement"; renderList(); renderStage(); toast("Settled — agreement drafted");
+  }catch(e){ toast(e.message,true); setBtnLoading(btn,false); }
+}
+async function runSim(id,btn){
+  setBtnLoading(btn,true,"Simulating…");
+  try{
+    const d=await api(`/api/v1/disputes/${id}/simulate`,{method:"POST",body:JSON.stringify({})});
+    replaceDispute(d); state.tab="negotiation"; renderList(); renderStage();
+    const st=d.negotiation?d.negotiation.status:"";
+    toast(st==="settled"?`Converged and settled at ${inr(d.negotiation.settled_amount)}`:"Rounds exhausted — escalated to a neutral");
+  }catch(e){ toast(e.message,true); setBtnLoading(btn,false); }
+}
+async function runOffers(id,btn){
+  const ask=parseInt(($("#ask").value||"").replace(/[^\d]/g,""),10);
+  const pay=parseInt(($("#pay").value||"").replace(/[^\d]/g,""),10);
+  if(isNaN(ask)||isNaN(pay)){ toast("Enter both offers",true); return; }
+  setBtnLoading(btn,true,"Submitting…");
+  try{
+    const res=await api(`/api/v1/disputes/${id}/offers`,{method:"POST",body:JSON.stringify({claimant_ask:ask,respondent_pay:pay})});
+    replaceDispute(res.dispute); state.tab="negotiation"; renderList(); renderStage();
+    const o=res.round.outcome;
+    toast(o==="settled"?`Offers crossed — settled at ${inr(res.round.settled_amount)}`:o==="escalated"?"Gap remains after final round — escalated":"Gap remains — private nudges sent");
+  }catch(e){ toast(e.message,true); setBtnLoading(btn,false); }
+}
+
+/* ---------------- create ---------------- */
+async function createCase(btn){
+  const amount=parseInt(($("#f-amount").value||"").replace(/[^\d]/g,""),10);
+  const title=$("#f-title").value.trim();
+  const claimant=$("#f-claimant").value.trim();
+  const respondent=$("#f-respondent").value.trim();
+  if(!claimant||!respondent){ toast("Claimant and respondent names are required",true); return; }
+  if(isNaN(amount)||amount<=0){ toast("Enter a valid claim amount",true); return; }
+  setBtnLoading(btn,true,"Opening…");
+  try{
+    const d=await api("/api/v1/disputes",{method:"POST",body:JSON.stringify({
+      category:$("#f-cat").value, title, claim_amount:amount, currency:"INR",
+      claimant:{name:claimant}, respondent:{name:respondent},
+      narrative:$("#f-narrative").value.trim(), respondent_response:$("#f-response").value.trim()
+    })});
+    replaceDispute(d); state.selectedId=d.id; state.tab="analysis";
+    ["f-title","f-claimant","f-respondent","f-amount","f-narrative","f-response"].forEach(i=>$("#"+i).value="");
+    $("#intake").classList.remove("open"); $("#newToggle").setAttribute("aria-expanded","false");
+    renderList(); renderStage(); toast("Case opened");
+  }catch(e){ toast(e.message,true); }
+  finally{ setBtnLoading(btn,false); }
+}
+
+/* ---------------- wire chrome ---------------- */
+$$("#filters .chip").forEach(c=>c.onclick=()=>{
+  state.filter=c.dataset.f;
+  $$("#filters .chip").forEach(x=>x.setAttribute("aria-pressed", x===c));
+  renderList();
+});
+$("#newToggle").onclick=()=>{
+  const open=$("#intake").classList.toggle("open");
+  $("#newToggle").setAttribute("aria-expanded",open);
+};
+$("#createBtn").onclick=(e)=>createCase(e.target);
+
+loadAll(true);
+</script>
+</body>
+</html>

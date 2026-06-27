@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Samadhan Architecture Diagrams</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #5f6b80;
+      --line: #d7deea;
+      --paper: #f7f9fc;
+      --panel: #ffffff;
+      --accent: #2f7d5b;
+      --engine: #b4842b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 15px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(1280px, calc(100vw - 40px));
+      margin: 0 auto;
+      padding: 40px 0 64px;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 28px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 20px;
+    }
+
+    h1,
+    h2 {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: clamp(30px, 4vw, 52px);
+      line-height: 1.02;
+    }
+
+    h2 {
+      font-size: 21px;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      max-width: 720px;
+      font-size: 16px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      min-width: 240px;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--muted);
+      padding: 5px 10px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin: 18px 0;
+      overflow: hidden;
+      box-shadow: 0 14px 40px rgba(23, 32, 51, 0.07);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcff;
+    }
+
+    .section-head span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .diagram {
+      padding: 20px;
+      overflow-x: auto;
+    }
+
+    .mermaid {
+      min-width: 780px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+
+    th,
+    td {
+      padding: 13px 14px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid var(--line);
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: #fbfcff;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    code {
+      color: #24324c;
+      background: #eef3f8;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+    }
+
+    @media (max-width: 760px) {
+      main {
+        width: min(100vw - 24px, 1280px);
+        padding-top: 24px;
+      }
+
+      header,
+      .section-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .legend {
+        justify-content: flex-start;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      main {
+        width: 100%;
+        padding: 0;
+      }
+
+      section {
+        box-shadow: none;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Samadhan Architecture</h1>
+        <p class="subtitle">Component structure, dispute lifecycle, economic model flow, and the confidential nudge protocol.</p>
+      </div>
+      <div class="legend" aria-label="Diagram legend">
+        <span class="chip">Client</span>
+        <span class="chip">Go API</span>
+        <span class="chip">Domain Engines</span>
+        <span class="chip">LLM Providers</span>
+      </div>
+    </header>
+
+    <section>
+      <div class="section-head">
+        <h2>Component Diagram</h2>
+        <span>System layers and dependencies</span>
+      </div>
+      <div class="diagram">
+        <pre class="mermaid">
+graph TB
+    subgraph "Client Layer"
+        UI["Single-page UI&lt;br&gt;(web/index.html)&lt;br&gt;Vanilla JS, no framework"]
+    end
+
+    subgraph "HTTP Layer  (internal/api)"
+        SRV["Server&lt;br&gt;Go 1.22 ServeMux&lt;br&gt;method + path routing"]
+        MW["Middleware&lt;br&gt;CORS / Logging / Panic recovery"]
+        HDL["Handlers&lt;br&gt;JSON decode/encode&lt;br&gt;error to status mapping"]
+    end
+
+    subgraph "Application Layer"
+        SVC["Service&lt;br&gt;(internal/api/service.go)&lt;br&gt;Orchestrates state transitions"]
+        SEED["Seed&lt;br&gt;3 demo disputes at boot"]
+    end
+
+    subgraph "Domain Engines"
+        AE["Analysis Engine&lt;br&gt;(internal/analysis)&lt;br&gt;Settlement intelligence +&lt;br&gt;deterministic economic model"]
+        NE["Negotiation Engine&lt;br&gt;(internal/negotiation)&lt;br&gt;Double-blind-bid protocol&lt;br&gt;+ BATNA-grounded nudges"]
+        DR["Drafter&lt;br&gt;(internal/drafting)&lt;br&gt;Settlement agreement&lt;br&gt;generation"]
+    end
+
+    subgraph "Infrastructure"
+        STORE["In-Memory Store&lt;br&gt;(internal/store)&lt;br&gt;sync.RWMutex&lt;br&gt;concurrent-safe"]
+        LLM["LLM Provider&lt;br&gt;(internal/llm)"]
+    end
+
+    subgraph "LLM Providers"
+        MOCK["Offline Model&lt;br&gt;(mock.go)&lt;br&gt;Deterministic, no network"]
+        ANTH["Anthropic Provider&lt;br&gt;(anthropic.go)&lt;br&gt;Claude via REST API"]
+    end
+
+    subgraph "Configuration"
+        CFG["Config&lt;br&gt;(internal/config)&lt;br&gt;Env vars + provider selection"]
+    end
+
+    UI --&gt;|"same-origin fetch&lt;br&gt;/api/v1/*"| SRV
+    SRV --&gt; MW --&gt; HDL --&gt; SVC
+    SVC --&gt; AE &amp; NE &amp; DR &amp; STORE
+    AE &amp; NE &amp; DR --&gt; LLM
+    LLM --&gt;|"key present"| ANTH
+    LLM --&gt;|"no key / forced"| MOCK
+    CFG --&gt;|"selects provider"| LLM
+    SEED --&gt; SVC
+
+    classDef engine fill:#e7d4a6,stroke:#b4842b,color:#14173a
+    classDef infra fill:#e9ebf1,stroke:#565a82,color:#14173a
+    classDef ui fill:#d1e7dd,stroke:#2f7d5b,color:#14173a
+    class AE,NE,DR engine
+    class STORE,LLM,MOCK,ANTH,CFG infra
+    class UI ui
+        </pre>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>Full Dispute Lifecycle</h2>
+        <span>Intake, analysis, negotiation, and settlement</span>
+      </div>
+      <div class="diagram">
+        <pre class="mermaid">
+sequenceDiagram
+    participant U as User / UI
+    participant H as HTTP Handlers
+    participant S as Service
+    participant A as Analysis Engine
+    participant LLM as LLM Provider
+    participant N as Negotiation Engine
+    participant D as Drafter
+    participant ST as Store
+
+    Note over U,ST: 1. INTAKE
+    U-&gt;&gt;H: POST /api/v1/disputes {category, parties, amount, narrative}
+    H-&gt;&gt;S: CreateDispute(input)
+    S-&gt;&gt;ST: Create(dispute)
+    ST--&gt;&gt;S: dispute (status=intake, id=SAMA-xxx)
+    S--&gt;&gt;H: dispute
+    H--&gt;&gt;U: 201 Created
+
+    Note over U,ST: 2. ANALYSIS (Settlement Intelligence)
+    U-&gt;&gt;H: POST /api/v1/disputes/{id}/analyze
+    H-&gt;&gt;S: Analyze(ctx, id)
+    S-&gt;&gt;ST: Get(id)
+    S-&gt;&gt;A: Analyze(ctx, dispute)
+    A-&gt;&gt;LLM: CompleteJSON[assessment](case facts)
+    LLM--&gt;&gt;A: {claim_strength, recovery_rate, capacity_ratio, ...}
+    Note over A: Sanitize + clamp model outputs
+    Note over A: Run deterministic economic model:&lt;br&gt;pvFactor, floor (BATNA), ceiling (exposure),&lt;br&gt;ZOPA, fairness-weighted recommendation
+    Note over A: Build line-by-line rationale&lt;br&gt;Build structural recommendations
+    A--&gt;&gt;S: CaseAnalysis
+    S-&gt;&gt;ST: Update (status=analyzed)
+    S--&gt;&gt;H: dispute + analysis
+    H--&gt;&gt;U: 200 OK
+
+    Note over U,ST: 3. NEGOTIATION (Double-Blind Bids)
+    U-&gt;&gt;H: POST /api/v1/disputes/{id}/offers {ask, pay}
+    H-&gt;&gt;S: SubmitOffers(ctx, id, ask, pay)
+    S-&gt;&gt;N: Start(dispute, maxRounds) - if first round
+    S-&gt;&gt;N: SubmitRound(ctx, dispute, ask, pay)
+
+    alt Offers cross (gap <= 0)
+        N--&gt;&gt;S: Round(outcome=settled, amount=midpoint)
+        S-&gt;&gt;D: Draft(ctx, dispute, amount, "negotiated")
+        D-&gt;&gt;LLM: CompleteJSON[draft](facts)
+        LLM--&gt;&gt;D: {agreement_text}
+        D--&gt;&gt;S: Settlement
+        S-&gt;&gt;ST: Update (status=settled)
+    else Gap remains, rounds left
+        N-&gt;&gt;LLM: NudgeRequest(claimant's BATNA, their offer)
+        LLM--&gt;&gt;N: nudge for claimant (private)
+        N-&gt;&gt;LLM: NudgeRequest(respondent's exposure, their offer)
+        LLM--&gt;&gt;N: nudge for respondent (private)
+        N--&gt;&gt;S: Round(outcome=continue, nudges=[claimant, respondent])
+    else Final round, gap remains
+        N--&gt;&gt;S: Round(outcome=escalated)
+        S-&gt;&gt;ST: Update (status=escalated)
+    end
+
+    S--&gt;&gt;H: {round, dispute}
+    H--&gt;&gt;U: 200 OK
+
+    Note over U,ST: 3b. FAST PATH - Accept Recommended
+    U-&gt;&gt;H: POST /api/v1/disputes/{id}/accept
+    H-&gt;&gt;S: AcceptRecommended(ctx, id)
+    S-&gt;&gt;D: Draft(ctx, dispute, recommended, "mediator_proposal")
+    D--&gt;&gt;S: Settlement
+    S-&gt;&gt;ST: Update (status=settled)
+    S--&gt;&gt;H: dispute
+    H--&gt;&gt;U: 200 OK
+        </pre>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>Economic Model</h2>
+        <span>How the recommendation is produced</span>
+      </div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+    START(["Dispute facts"])
+    LLM["LLM qualitative assessment&lt;br&gt;claim_strength (p), recovery_rate,&lt;br&gt;time_to_resolution, capacity_ratio"]
+    CLAMP["Sanitize &amp; clamp outputs&lt;br&gt;into valid ranges"]
+
+    subgraph "Deterministic Economic Model"
+        PV["pvFactor = 1/(1+0.12)^years"]
+        EG["expectedGross = claim x p"]
+        EC["expectedCollectable = gross x recoveryRate"]
+        FLOOR["Claimant floor (BATNA)&lt;br&gt;= max(0, collectable x pvFactor - claimantCost)"]
+        CEIL_RAW["respondentExposure&lt;br&gt;= gross x pvFactor + respondentCost"]
+        CAP["capacity = claim x capacityRatio"]
+        CEIL["Respondent ceiling&lt;br&gt;= min(capacity, exposure)"]
+        ZOPA{"ceiling >= floor?"}
+        YES["ZOPA exists&lt;br&gt;zone = [floor, ceiling]&lt;br&gt;width = ceiling - floor"]
+        NO["NO ZOPA&lt;br&gt;floor exceeds ceiling"]
+        FAIR["fairnessWeight = clamp(0.35 + 0.30 x p)"]
+        REC["recommended = floor + width x fairnessWeight&lt;br&gt;rounded to INR 1,000"]
+        REC_CAP["recommended = ceiling&lt;br&gt;(capacity-limited fallback)"]
+    end
+
+    RAT["Line-by-line rationale&lt;br&gt;with INR figures"]
+    RECS_Z["Recommendations:&lt;br&gt;zone narrow - settle quickly&lt;br&gt;zone wide - use protocol"]
+    RECS_N["Recommendations:&lt;br&gt;instalment plan to open a zone&lt;br&gt;escalate to human neutral"]
+
+    START --&gt; LLM --&gt; CLAMP --&gt; PV &amp; EG
+    EG --&gt; EC --&gt; FLOOR
+    PV --&gt; FLOOR &amp; CEIL_RAW
+    EG --&gt; CEIL_RAW
+    CEIL_RAW --&gt; CEIL
+    CAP --&gt; CEIL
+    FLOOR --&gt; ZOPA
+    CEIL --&gt; ZOPA
+    ZOPA --&gt;|Yes| YES --&gt; FAIR --&gt; REC --&gt; RAT --&gt; RECS_Z
+    ZOPA --&gt;|No| NO --&gt; REC_CAP --&gt; RAT --&gt; RECS_N
+
+    classDef model fill:#e7d4a6,stroke:#b4842b
+    classDef result fill:#d1e7dd,stroke:#2f7d5b
+    classDef fail fill:#f2d5d2,stroke:#b04a3f
+    class PV,EG,EC,FLOOR,CEIL_RAW,CAP,CEIL,FAIR,REC model
+    class YES,RECS_Z result
+    class NO,REC_CAP,RECS_N fail
+        </pre>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>Confidential Nudge Protocol</h2>
+        <span>Private guidance without leaking offers</span>
+      </div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart LR
+    C["Claimant&lt;br&gt;submits ask&lt;br&gt;(private)"]
+    R["Respondent&lt;br&gt;submits pay&lt;br&gt;(private)"]
+    ENG["Engine&lt;br&gt;computes gap"]
+    NC["Nudge for Claimant&lt;br&gt;grounded in claimant's&lt;br&gt;own BATNA only"]
+    NR["Nudge for Respondent&lt;br&gt;grounded in respondent's&lt;br&gt;own exposure only"]
+
+    C --&gt; ENG
+    R --&gt; ENG
+    ENG --&gt;|"private channel"| NC --&gt;|"private"| C
+    ENG --&gt;|"private channel"| NR --&gt;|"private"| R
+
+    ENG -.-&gt;|"NEVER reveals&lt;br&gt;other party's figure"| NC
+    ENG -.-&gt;|"NEVER reveals&lt;br&gt;other party's figure"| NR
+
+    classDef priv fill:#e9ebf1,stroke:#565a82
+    class NC,NR priv
+        </pre>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>Technology Choices</h2>
+        <span>Implementation summary</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Layer</th>
+            <th>Choice</th>
+            <th>Rationale</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Language</td>
+            <td>Go 1.22</td>
+            <td>stdlib-only server, method routing, strong concurrency, single binary</td>
+          </tr>
+          <tr>
+            <td>External deps</td>
+            <td>Zero</td>
+            <td>Entire dependency tree is Go stdlib; only outbound HTTP call is to Anthropic</td>
+          </tr>
+          <tr>
+            <td>UI</td>
+            <td>Vanilla JS, single file</td>
+            <td>No build step, no node_modules, serves from <code>web/index.html</code></td>
+          </tr>
+          <tr>
+            <td>Storage</td>
+            <td>In-memory (<code>sync.RWMutex</code>)</td>
+            <td>Appropriate for a demo / take-home; swap for Postgres behind an interface</td>
+          </tr>
+          <tr>
+            <td>LLM</td>
+            <td>Provider interface</td>
+            <td><code>MockProvider</code> for deterministic offline; <code>AnthropicProvider</code> for live</td>
+          </tr>
+          <tr>
+            <td>Config</td>
+            <td>Environment variables</td>
+            <td>12-factor; zero-config default boots offline with seed data</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+
+    mermaid.initialize({
+      startOnLoad: true,
+      securityLevel: "loose",
+      theme: "base",
+      themeVariables: {
+        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+        primaryColor: "#e9ebf1",
+        primaryTextColor: "#14173a",
+        primaryBorderColor: "#565a82",
+        lineColor: "#6b7280",
+        secondaryColor: "#d1e7dd",
+        tertiaryColor: "#f7f9fc"
+      },
+      flowchart: {
+        htmlLabels: true,
+        curve: "basis"
+      },
+      sequence: {
+        mirrorActors: false,
+        messageAlign: "center"
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# binaries
+/bin/
+samadhan
+*.exe
+
+# env / secrets
+.env
+
+# go
+*.test
+*.out
+coverage.*
+
+# editor / os
+.DS_Store
+.idea/
+.vscode/
+*.swp
